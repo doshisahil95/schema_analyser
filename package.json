@@ -1,0 +1,17 @@
+{
+  "name": "schema_analyser",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Sahil Doshi",
+  "license": "ISC",
+  "dependencies": {
+    "event-stream": "^4.0.1",
+    "minimist": "^1.2.8",
+    "mongodb": "^5.8.1",
+    "mongodb-schema": "^11.2.2"
+  }
+}
