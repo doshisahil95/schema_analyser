@@ -1,3 +1,5 @@
+// TO BE USED WITH https://github.com/feliixx/mgodatagen
+
 //DEPENDENCIES
 const mongodbSchema = require('mongodb-schema');
 const { MongoClient } = require('mongodb');
