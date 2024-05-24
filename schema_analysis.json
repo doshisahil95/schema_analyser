@@ -1,0 +1,204 @@
+[
+    {
+        "database": "sample_mflix",
+        "collection": "theaters",
+        "count": 0,
+        "content": {
+            "_id": {
+                "type": "objectId"
+            },
+            "location": {
+                "type": "object",
+                "objectContent": {
+                    "address": {
+                        "type": "object",
+                        "objectContent": {
+                            "city": {
+                                "type": "string"
+                            },
+                            "state": {
+                                "type": "string"
+                            },
+                            "street1": {
+                                "type": "string"
+                            },
+                            "zipcode": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "geo": {
+                        "type": "object",
+                        "objectContent": {
+                            "coordinates": {
+                                "type": "array",
+                                "arrayContent": {
+                                    "type": "int"
+                                }
+                            },
+                            "type": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "theaterId": {
+                "type": "int"
+            }
+        }
+    },
+    {
+        "database": "sample_mflix",
+        "collection": "sessions",
+        "count": 0,
+        "content": {
+            "_id": {
+                "type": "objectId"
+            },
+            "jwt": {
+                "type": "string"
+            },
+            "user_id": {
+                "type": "string"
+            }
+        }
+    },
+    {
+        "database": "sample_mflix",
+        "collection": "comments",
+        "count": 0,
+        "content": {
+            "_id": {
+                "type": "objectId"
+            },
+            "date": {
+                "type": "date",
+                "startDate": "1900-01-01T00:00:00+00:00",
+                "endDate": "2100-12-31T12:00:00+00:00"
+            },
+            "email": {
+                "type": "string"
+            },
+            "movie_id": {
+                "type": "objectId"
+            },
+            "name": {
+                "type": "string"
+            },
+            "text": {
+                "type": "string"
+            }
+        }
+    },
+    {
+        "database": "sample_mflix",
+        "collection": "movies",
+        "count": 0,
+        "content": {
+            "_id": {
+                "type": "objectId"
+            },
+            "awards": {
+                "type": "object",
+                "objectContent": {
+                    "nominations": {
+                        "type": "int"
+                    },
+                    "text": {
+                        "type": "string"
+                    },
+                    "wins": {
+                        "type": "int"
+                    }
+                }
+            },
+            "countries": {
+                "type": "array",
+                "arrayContent": {
+                    "type": "string"
+                }
+            },
+            "dummyArr": {
+                "type": "array",
+                "arrayContent": {
+                    "type": "object",
+                    "objectContent": {
+                        "field1": {
+                            "type": "string"
+                        },
+                        "field2": {
+                            "type": "string"
+                        },
+                        "field3": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "genres": {
+                "type": "array",
+                "arrayContent": {
+                    "type": "string"
+                }
+            },
+            "imdb": {
+                "type": "object",
+                "objectContent": {
+                    "id": {
+                        "type": "int"
+                    },
+                    "rating": {
+                        "type": "int"
+                    },
+                    "votes": {
+                        "type": "int"
+                    }
+                }
+            },
+            "lastupdated": {
+                "type": "string"
+            },
+            "newNumber": {
+                "type": "int"
+            },
+            "num_mflix_comments": {
+                "type": "int"
+            },
+            "plot": {
+                "type": "string"
+            },
+            "title": {
+                "type": "string"
+            },
+            "type": {
+                "type": "string"
+            },
+            "uselessBool": {
+                "type": "boolean"
+            },
+            "year": {
+                "type": "int"
+            }
+        }
+    },
+    {
+        "database": "sample_mflix",
+        "collection": "users",
+        "count": 0,
+        "content": {
+            "_id": {
+                "type": "objectId"
+            },
+            "email": {
+                "type": "string"
+            },
+            "name": {
+                "type": "string"
+            },
+            "password": {
+                "type": "string"
+            }
+        }
+    }
+]

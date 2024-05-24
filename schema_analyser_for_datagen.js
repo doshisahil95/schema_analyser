@@ -6,6 +6,8 @@ const fs = require('fs')
 
 // CONTROL PARAMETERS
 const fileName = "schema_analysis.json";
+const startDate = "1900-01-01T00:00:00+00:00";
+const endDate = "2100-12-31T12:00:00+00:00";
 const maxCollectionCount = 20;
 const maxSampleSize = 1000;
 
@@ -16,7 +18,7 @@ if (!argv.connectionString) {
 
 const client = new MongoClient(argv.connectionString, function (err) {
     if (err) {
-        throw err
+        console.log(err);
     }
 })
 
@@ -43,14 +45,12 @@ async function run() {
         }
 
         if (!argv.includeNamespace) {
-            console.log("Namespaces to include not defined. Sampling all namespaces..");
             includeNamespace = [];
         } else {
             includeNamespace = JSON.parse(argv.includeNamespace)
         }
 
         if (!argv.excludeNamespace) {
-            console.log("Namespaces to exclude not defined. Sampling all namespaces..");
             excludeNamespace = [];
         } else {
             excludeNamespace = JSON.parse(argv.excludeNamespace)
@@ -94,26 +94,16 @@ async function run() {
             } else {
                 documentStream = client.db(finalNamespace[singleNamespace].database).collection(finalNamespace[singleNamespace].collection).aggregate([{ $sample: { size: sampleSize } }]);
 
-                const result = await mongodbSchema.default(documentStream);
-                const simplified = [];
-
-                for (const field of loopThroughFields(result.fields)) {
-                    for (let i = 0; i < field.types.length; i++) {
-                        var obj = {
-                            path: changePath(field.types[i].path),
-                            probability: (field.types[i].probability * 100) + '%',
-                            fieldType: field.types[i].name,
-                        }
-                        simplified.push(obj)
-                    }
+                var result = await mongodbSchema.default(documentStream);
+                var finalAnalysis = {
+                    database: finalNamespace[singleNamespace].database,
+                    collection: finalNamespace[singleNamespace].collection,
+                    count: 0,
+                    content: parseAnalysis(result.fields)
                 }
-                var finalObj = {
-                    databaseName: finalNamespace[singleNamespace].database,
-                    collectionName: finalNamespace[singleNamespace].collection,
-                    analysis: simplified,
-                }
-                finalArr.push(finalObj)
             }
+
+            finalArr.push(finalAnalysis)
         }
 
         if (fs.existsSync(process.cwd() + "/" + fileName)) {
@@ -179,19 +169,86 @@ function changeNamespaceSet(flag, fullNamespace, subset) {
     }
 }
 
-function changePath(path) {
-    return (path.toString()).replaceAll(",", ".");
-}
-
-function* loopThroughFields(fieldArr) {
-    for (const field of fieldArr) {
-        yield field;
-        for (const type of field.types) {
-            if (type.name == 'Document') {
-                yield* loopThroughFields(type.fields)
-            }
+function parseAnalysis(toParse) {
+    var finalObj = {}
+    for (const field of toParse) {
+        switch (field.type) {
+            case "Document":
+                finalObj[field.name] = {
+                    type: "object",
+                    objectContent: parseAnalysis(field.types[0].fields)
+                }
+                break;
+            case "Array":
+                if (field.types[0].types[0].name == "Document") {
+                    finalObj[field.name] = {
+                        type: "array",
+                        arrayContent: {
+                            type: "object",
+                            objectContent: parseAnalysis(field.types[0].types[0].fields)
+                        }
+                    }
+                } else {
+                    var arrayContent = {};
+                    switch (field.types[0].types[0].name) {
+                        case "String":
+                            arrayContent.type = "string"
+                            break;
+                        case "Number":
+                            arrayContent.type = "int"
+                            break;
+                        case "Date":
+                            arrayContent.type = "date"
+                            arrayContent.startDate = startDate
+                            arrayContent.endDate = endDate
+                            break;
+                        case "Boolean":
+                            arrayContent.type = "boolean"
+                            break;
+                        case "ObjectId":
+                            arrayContent.type = "objectId"
+                            break;
+                        default:
+                            break;
+                    }
+                    finalObj[field.name] = {
+                        type: "array",
+                        arrayContent: arrayContent
+                    }
+                }
+                break;
+            case "ObjectId":
+                finalObj[field.name] = {
+                    type: "objectId"
+                }
+                break;
+            case "String":
+                finalObj[field.name] = {
+                    type: "string"
+                }
+                break;
+            case "Number":
+                finalObj[field.name] = {
+                    type: "int"
+                }
+                break;
+            case "Date":
+                finalObj[field.name] = {
+                    type: "date",
+                    startDate: startDate,
+                    endDate: endDate
+                }
+                break;
+            case "Boolean":
+                finalObj[field.name] = {
+                    type: "boolean"
+                }
+                break;
+            default:
+                break;
         }
     }
+    return finalObj
 }
 
 run();
