@@ -8,8 +8,8 @@ const fs = require('fs')
 
 // CONTROL PARAMETERS
 const fileName = "schema_analysis.json";
-const startDate = "1900-01-01T00:00:00+00:00";
-const endDate = "2100-12-31T12:00:00+00:00";
+const startDate = "2023-12-01T00:00:00+00:00";
+const endDate = "2024-05-31T12:00:00+00:00";
 const maxCollectionCount = 20;
 const maxSampleSize = 1000;
 
@@ -203,28 +203,46 @@ function parseAnalysis(toParse) {
                     var arrayContent = {};
                     switch (field.types[0].types[0].name) {
                         case "String":
-                            arrayContent.type = "string"
+                            arrayContent = {
+                                type: "string",
+                                minLength: 5,
+                                maxLength: 100
+                            }
                             break;
                         case "Number":
-                            arrayContent.type = "int"
+                            arrayContent = {
+                                type: "int",
+                                maxInt: 5,
+                                maxInt: 100
+                            }
                             break;
                         case "Date":
-                            arrayContent.type = "date"
-                            arrayContent.startDate = startDate
-                            arrayContent.endDate = endDate
+                            arrayContent = {
+                                type: "date",
+                                startDate: startDate,
+                                endDate: endDate
+                            }
                             break;
                         case "Boolean":
-                            arrayContent.type = "boolean"
+                            arrayContent = {
+                                type: "boolean"
+                            }
                             break;
                         case "ObjectId":
-                            arrayContent.type = "objectId"
+                            arrayContent = {
+                                type: "objectId"
+                            }
                             break;
                         case "Binary":
-                            arrayContent.type = "uuid"
-                            arrayContent.format = "binary"
+                            arrayContent = {
+                                type: "uuid",
+                                format: "binary"
+                            }
                             break;
                         case "Long":
-                            arrayContent.type = "long"
+                            arrayContent = {
+                                type: "long"
+                            }
                             break;
                         default:
                             break;
