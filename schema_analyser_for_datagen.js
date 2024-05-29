@@ -182,7 +182,16 @@ function parseAnalysis(toParse) {
                 }
                 break;
             case "Array":
-                if (field.types[0].types[0].name == "Document") {
+                if (field.types[0].types.length == 0) {
+                    finalObj[field.name] = {
+                        type: "array",
+                        arrayContent: {
+                            "type": "string"
+                        },
+                        minLength: 0,
+                        maxLength: 0
+                    }
+                } else if (field.types[0].types[0].name == "Document") {
                     finalObj[field.name] = {
                         type: "array",
                         arrayContent: {
@@ -209,6 +218,13 @@ function parseAnalysis(toParse) {
                             break;
                         case "ObjectId":
                             arrayContent.type = "objectId"
+                            break;
+                        case "Binary":
+                            arrayContent.type = "uuid"
+                            arrayContent.format = "binary"
+                            break;
+                        case "Long":
+                            arrayContent.type = "long"
                             break;
                         default:
                             break;
@@ -244,6 +260,17 @@ function parseAnalysis(toParse) {
             case "Boolean":
                 finalObj[field.name] = {
                     type: "boolean"
+                }
+                break;
+            case "Binary":
+                finalObj[field.name] = {
+                    type: "uuid",
+                    format: "binary"
+                }
+                break;
+            case "Long":
+                finalObj[field.name] = {
+                    type: "long",
                 }
                 break;
             default:
