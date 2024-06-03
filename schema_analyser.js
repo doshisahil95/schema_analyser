@@ -5,7 +5,7 @@ const argv = require('minimist')(process.argv.slice(2));
 const fs = require('fs')
 
 // CONTROL PARAMETERS
-const fileName = "schema_analysis.json";
+const fileName = new Date().toISOString() + ".json";
 const maxCollectionCount = 20;
 const maxSampleSize = 1000;
 
