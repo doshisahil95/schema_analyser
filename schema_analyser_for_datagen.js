@@ -7,11 +7,18 @@ const argv = require('minimist')(process.argv.slice(2));
 const fs = require('fs')
 
 // CONTROL PARAMETERS
-const fileName = "schema_analysis.json";
-const startDate = "2023-12-01T00:00:00+00:00";
-const endDate = "2024-05-31T12:00:00+00:00";
-const maxCollectionCount = 20;
-const maxSampleSize = 1000;
+const config = {
+    startDate: "2000-01-01T00:00:00+00:00",
+    endDate: "2100-01-01T00:00:00+00:00",
+    maxCollectionCount: 20,
+    maxSampleSize: 1000,
+    minIntValue: 0,
+    maxIntValue: 10,
+    minStringLength: 0,
+    maxStringLength: 10,
+    minArrayLength: 0,
+    maxArrayLength: 10
+}
 
 if (!argv.connectionString) {
     console.log("Invalid Connection String. Exiting now..");
@@ -26,17 +33,68 @@ const client = new MongoClient(argv.connectionString, function (err) {
 
 async function run() {
     try {
-        var sampleSize;
-        var includeNamespace = [];
-        var excludeNamespace = [];
-        var documentStream;
-        var finalArr = [];
-        var namespaceSet = [];
-        var finalNamespace = []
+        var sampleSize, maxIntValue, minIntValue, maxArrayLength, minArrayLength, minStringLength, maxStringLength, startDate, endDate, documentStream, fileName = new Date().toISOString() + ".json";
+        var includeNamespace = [], excludeNamespace = [], finalArr = [], namespaceSet = [], finalNamespace = [];
+
+        if (!argv.maxIntValue) {
+            console.log("Maximum integer value not defined. Using default maximum integer value..");
+            maxIntValue = config.maxIntValue
+        } else {
+            maxIntValue = argv.maxIntValue
+        }
+
+        if (!argv.minIntValue) {
+            console.log("Minimum integer value not defined. Using default minimum integer value..");
+            minIntValue = config.minIntValue
+        } else {
+            minIntValue = argv.minIntValue
+        }
+
+        if (!argv.maxStringLength) {
+            console.log("Maximum string length not defined. Using default maximum string length..");
+            maxStringLength = config.maxStringLength
+        } else {
+            maxStringLength = argv.maxStringLength
+        }
+
+        if (!argv.minStringLength) {
+            console.log("Minimum string length not defined. Using default minimum string length..");
+            minStringLength = config.minStringLength
+        } else {
+            minStringLength = argv.minStringLength
+        }
+
+        if (!argv.maxArrayLength) {
+            console.log("Maximum array length not defined. Using default maximum array length ..");
+            maxArrayLength = config.maxArrayLength
+        } else {
+            maxArrayLength = argv.maxArrayLength
+        }
+        
+        if (!argv.minArrayLength) {
+            console.log("Minimum array length not defined. Using default minimum array length ..");
+            minArrayLength = config.minArrayLength
+        } else {
+            minArrayLength = argv.minArrayLength
+        }
+
+        if (!argv.startDate) {
+            console.log("StartDate value not defined. Using default startDate value..");
+            startDate = config.startDate
+        } else {
+            startDate = argv.startDate
+        }
+
+        if (!argv.endDate) {
+            console.log("EndDate value not defined. Using default endDate value..");
+            endDate = config.endDate
+        } else {
+            endDate = argv.endDate
+        }
 
         if (!argv.sampleSize) {
             console.log("Sample Size not defined. Using default sample size..");
-            sampleSize = maxSampleSize;
+            sampleSize = config.maxSampleSize;
         } else {
             sampleSize = argv.sampleSize
         }
@@ -66,8 +124,8 @@ async function run() {
                 console.log("Skipping " + dbs.databases[singleDB].name + " database");
             } else {
                 let collections = await client.db(dbs.databases[singleDB].name).listCollections().toArray();
-                if (collections.length > maxCollectionCount) {
-                    console.log(dbs.databases[singleDB].name + " has more than " + maxCollectionCount + " collections. Please provide --includeNamespace or --excludeNamespace parameter for the same. Skipping collection to avoid performance issue.");
+                if (collections.length > config.maxCollectionCount) {
+                    console.log(dbs.databases[singleDB].name + " has more than " + config.maxCollectionCount + " collections. Please provide --includeNamespace or --excludeNamespace parameter for the same. Skipping database to avoid performance issues.");
                 } else {
                     for (var singleCollection in collections) {
                         namespaceSet.push({
@@ -101,20 +159,14 @@ async function run() {
                     database: finalNamespace[singleNamespace].database,
                     collection: finalNamespace[singleNamespace].collection,
                     count: 0,
-                    content: parseAnalysis(result.fields)
+                    content: parseAnalysis(result.fields, minIntValue, maxIntValue, minStringLength, maxStringLength, minArrayLength, maxArrayLength, startDate, endDate)
                 }
             }
 
             finalArr.push(finalAnalysis)
         }
 
-        if (fs.existsSync(process.cwd() + "/" + fileName)) {
-            fs.unlink(process.cwd() + "/" + fileName, (err) => {
-                throw err;
-            })
-        } else {
-            fs.appendFile(fileName, JSON.stringify(finalArr), () => console.log("Schema Analysis written to JSON file at path: " + process.cwd() + "/" + fileName))
-        }
+        fs.appendFile(fileName, JSON.stringify(finalArr), () => console.log("Schema Analysis written to JSON file at path: " + process.cwd() + "/" + fileName))
     } catch (error) {
         console.log(error)
     } finally {
@@ -171,7 +223,7 @@ function changeNamespaceSet(flag, fullNamespace, subset) {
     }
 }
 
-function parseAnalysis(toParse) {
+function parseAnalysis(toParse, minIntValue, maxIntValue, minStringLength, maxStringLength, minArrayLength, maxArrayLength, startDate, endDate) {
     var finalObj = {}
     for (const field of toParse) {
         switch (field.type) {
@@ -188,8 +240,8 @@ function parseAnalysis(toParse) {
                         arrayContent: {
                             "type": "string"
                         },
-                        minLength: 0,
-                        maxLength: 0
+                        minLength: minArrayLength,
+                        maxLength: maxArrayLength
                     }
                 } else if (field.types[0].types[0].name == "Document") {
                     finalObj[field.name] = {
@@ -205,15 +257,15 @@ function parseAnalysis(toParse) {
                         case "String":
                             arrayContent = {
                                 type: "string",
-                                minLength: 5,
-                                maxLength: 100
+                                minLength: minStringLength,
+                                maxLength: maxStringLength
                             }
                             break;
                         case "Number":
                             arrayContent = {
                                 type: "int",
-                                maxInt: 5,
-                                maxInt: 100
+                                min: minIntValue,
+                                max: maxIntValue
                             }
                             break;
                         case "Date":
@@ -260,12 +312,16 @@ function parseAnalysis(toParse) {
                 break;
             case "String":
                 finalObj[field.name] = {
-                    type: "string"
+                    type: "string",
+                    minLength: minStringLength,
+                    maxLength: maxStringLength
                 }
                 break;
             case "Number":
                 finalObj[field.name] = {
-                    type: "int"
+                    type: "int",
+                    min: minIntValue,
+                    max: maxIntValue
                 }
                 break;
             case "Date":
