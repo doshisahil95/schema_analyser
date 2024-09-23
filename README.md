@@ -23,7 +23,7 @@ npm i
 There are multiple arguments that are common for both the utilities which are outlined below. The ones which are specific to either utility are outlined in their respective sections.
 
 ```
---uri                        Pass a connection string to the analyser. This is a required field.
+--connectionString           Pass a connection string to the analyser. This is a required field.
 --sampleSize                 Sample size to analyse documents in collection. Default is 1000. Optional
 --includeNamespace           Pass an array of namespaces that you want to include for the analysis. Optional.
 --exludeNamespace            Pass an array of namespaces that you want to exclude for the analysis. Optional.
@@ -31,7 +31,7 @@ There are multiple arguments that are common for both the utilities which are ou
 Example:
 
 ```bash
-node schema_analyser.js --uri="<<sample connection string>>" --includeNamespace='["database1.collection1", "database2.collection2"]'
+node schema_analyser.js --connectionString="<<sample connection string>>" --includeNamespace='["database1.collection1", "database2.collection2"]'
 ```
 
 ### schema_analyser_for_datagen.js
